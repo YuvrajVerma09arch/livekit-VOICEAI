@@ -29,7 +29,6 @@ from livekit.agents import (
 
 # Modular Agent Capabilities
 from livekit.agents import llm, stt, tts, inference
-
 from livekit.agents.llm import function_tool, ToolError
 
 # Provider Plugins
@@ -54,7 +53,6 @@ class Assistant(Agent):
                 "Do not use emojis, markdown formatting, or long lists."
             ),
         )
-
 
     @function_tool
     async def lookup_weather(self, context: RunContext, location: str) -> dict[str, Any]:
@@ -104,7 +102,7 @@ class Assistant(Agent):
             except Exception as e:
                 logging.error(f"Unexpected error in lookup_weather: {e}")
                 raise ToolError("An unexpected error occurred while looking up the weather.")
-            
+
     @function_tool
     async def check_server_status(self, context: RunContext, service_name: str) -> str:
         """Check the current status of a specific corporate server or service."""
@@ -114,13 +112,12 @@ class Assistant(Agent):
             return f"The {service_name} is currently down for maintenance. Estimated recovery: 20 minutes."
         
         return f"The {service_name} is fully operational and reporting no issues."
-    
+
     @function_tool
     async def reset_password(self, context: RunContext, employee_username: str) -> str:
         """Trigger a password reset link to be sent to an employee's secondary email."""
         logging.info(f"Tool called: resetting password for {employee_username}")
         return f"Done! A secure password reset link has been sent to the recovery email for {employee_username}."
-
 
     @function_tool
     async def process_payment(self, context: RunContext, amount: float, account_id: str) -> str:
@@ -132,10 +129,9 @@ class Assistant(Agent):
         logging.info(f"Tool called: processing payment of ${amount} for account {account_id}. Simulating network delay...")
         
         # Simulate a slow external API call (e.g., reaching out to Stripe or PayPal)
-        await asyncio.sleep(15)
+        await asyncio.sleep(5)
         
         return f"Successfully processed the payment of ${amount} for account {account_id}."
-    
 
     @function_tool()
     async def search_knowledge_base(self, context: RunContext, query: str) -> str:
@@ -161,7 +157,6 @@ class Assistant(Agent):
         status_update_task.cancel()
         
         return result
-
 
 # Initialize the Agent Server
 server = AgentServer()

@@ -1,3 +1,20 @@
+"""
+Building a Voice AI Assistant with LiveKit
+
+In this tutorial, we will walk through the process of building a real-time voice AI assistant using the LiveKit Agents framework. Our assistant will listen to user input, process it using a Large Language Model (LLM), and respond with synthesized speech.
+
+We will be integrating several powerful AI models:
+* STT (Speech-to-Text): Deepgram Nova-3
+* LLM (Large Language Model): OpenAI GPT-4.1-mini
+* TTS (Text-to-Speech): Cartesia Sonic-2
+"""
+
+# --- Step 1: Environment Setup and Imports ---
+# First, we need to import the necessary modules. We use `dotenv` to load our API keys
+# (like `LIVEKIT_API_KEY`, `OPENAI_API_KEY`, etc.) from a local `.env` file. We also 
+# import the core classes from `livekit.agents`, including the `AgentServer`, and 
+# specific plugins for noise cancellation.
+
 import logging
 from dotenv import load_dotenv
 
@@ -14,6 +31,11 @@ from livekit.plugins import noise_cancellation, silero
 # Load environment variables containing API keys
 load_dotenv()
 
+
+# --- Step 2: Defining the Assistant Agent ---
+# Next, we define our core logic by subclassing the `Agent` class. In the `__init__` 
+# method, we provide the system instructions that dictate the assistant's persona 
+# and behavior.
 
 class Assistant(Agent):
     """
@@ -33,6 +55,18 @@ class Assistant(Agent):
 # Initialize the Agent Server
 server = AgentServer()
 
+
+# --- Step 4: Configuring the Agent Session ---
+# Next, we define the `entrypoint` function and decorate it with `@server.rtc_session()`, 
+# which registers this function to handle incoming RTC sessions (like a user joining a room).
+#
+# Notice the `ctx: JobContext` parameter. The `JobContext` provides essential information 
+# about the current job your agent is handling. It grants your agent access to the specific 
+# LiveKit `Room` object it is connecting to, details about the participants, and methods 
+# to accept or manage the connection.
+#
+# Inside the entrypoint, we instantiate an `AgentSession` and configure the pipeline 
+# of AI models that will process the audio. We specify the models for STT, LLM, and TTS.
 
 @server.rtc_session()
 async def entrypoint(ctx: JobContext):
@@ -68,6 +102,9 @@ async def entrypoint(ctx: JobContext):
     await ctx.connect()
 
 
+# --- Step 6: Running the Application ---
+# Finally, to make this script executable, we use the LiveKit CLI to run our application, 
+# simply passing our configured `server` instance to `cli.run_app()`.
 
 if __name__ == "__main__":
     # Setup standard logging

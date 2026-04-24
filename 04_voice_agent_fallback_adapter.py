@@ -20,8 +20,9 @@ from livekit.agents import (
     TurnHandlingOptions,
     cli,
 )
-from livekit.agents import llm, stt, tts, inference
 
+# Modular Agent Capabilities for routing and factories
+from livekit.agents import llm, stt, tts, inference
 
 # Provider Plugins (for utilities like VAD, Noise Cancellation, and Turn Detection)
 from livekit.plugins import noise_cancellation, silero
@@ -29,7 +30,6 @@ from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 # Load environment variables containing API keys for all providers
 load_dotenv()
-
 
 class Assistant(Agent):
     """
@@ -46,7 +46,6 @@ class Assistant(Agent):
             ),
         )
 
-
 # Initialize the Agent Server to manage incoming worker connections
 server = AgentServer()
 
@@ -59,7 +58,7 @@ async def entrypoint(ctx: JobContext):
     # 1. Define STT Fallback (AssemblyAI -> Deepgram)
     resilient_stt = stt.FallbackAdapter(
         [
-            inference.STT.from_model_string("invalid"),
+            inference.STT.from_model_string("assemblyai/universal-streaming:en"),
             inference.STT.from_model_string("deepgram/nova-3"),
         ]
     )
@@ -67,7 +66,7 @@ async def entrypoint(ctx: JobContext):
     # 2. Define LLM Fallback (OpenAI -> Google Gemini)
     resilient_llm = llm.FallbackAdapter(
         [
-            inference.LLM(model="openai/gpt-10"),
+            inference.LLM(model="openai/gpt-4.1-mini"),
             inference.LLM(model="google/gemini-2.5-flash"),
         ]
     )

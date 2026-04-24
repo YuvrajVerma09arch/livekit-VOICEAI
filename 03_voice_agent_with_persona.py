@@ -21,10 +21,8 @@ from livekit.agents import (
 from livekit.plugins import cartesia, deepgram, noise_cancellation, silero
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
-
 # Load environment variables (e.g., API keys for LiveKit, OpenAI, Deepgram, Cartesia)
 load_dotenv()
-
 
 class Assistant(Agent):
     """
@@ -45,10 +43,8 @@ class Assistant(Agent):
             ),
         )
 
-
 # Initialize the Agent Server to manage incoming worker connections and RTC sessions
 server = AgentServer()
-
 
 @server.rtc_session()
 async def entrypoint(ctx: JobContext):
@@ -92,7 +88,6 @@ async def entrypoint(ctx: JobContext):
 
     # 3. Establish the final connection to the LiveKit room to begin the interaction
     await ctx.connect()
-
 
 if __name__ == "__main__":
     # Setup standard logging to output agent status and errors to the console

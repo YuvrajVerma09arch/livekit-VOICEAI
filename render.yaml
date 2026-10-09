@@ -1,0 +1,60 @@
+# Render Blueprint - deploys the two long-running pieces of this app:
+#   1. kilos-token-server  (web)      - FastAPI /token endpoint, /healthz for checks
+#   2. kilos-agent         (worker)   - the LiveKit agent worker (base_agent.py start)
+#
+# Deploy: Render Dashboard -> New -> Blueprint -> pick this repo.
+# Secrets are prompted for on the Blueprint setup screen (sync: false).
+# After the web service is up, put its URL into frontend/vercel.json (rewrites).
+
+services:
+  - type: web
+    name: kilos-token-server
+    runtime: python
+    plan: free
+    buildCommand: uv sync --frozen --no-dev
+    startCommand: uv run --no-sync uvicorn token_server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: SIMLI_API_KEY
+        sync: false
+      - key: SIMLI_AVATAR_ID
+        sync: false
+      # - key: TOKEN_RATE_LIMIT
+      #   value: "10"
+
+  - type: worker
+    name: kilos-agent
+    runtime: python
+    # background workers have no free tier; 0.5c-512mb is the smallest plan
+    plan: 0.5c-512mb
+    buildCommand: uv sync --frozen --no-dev
+    startCommand: uv run --no-sync python base_agent.py start
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: ELEVEN_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SIMLI_API_KEY
+        sync: false
+      - key: SIMLI_AVATAR_ID
+        sync: false
+      # - key: ELEVEN_VOICE_ID
+      #   sync: false
+      # - key: SIMLI_JOIN_TIMEOUT
+      #   value: "15"

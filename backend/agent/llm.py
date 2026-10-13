@@ -2,9 +2,10 @@
 
 from typing import Any
 
+from google.genai import types as genai_types
 from livekit.agents import llm
 from livekit.agents.llm.fallback_adapter import DEFAULT_FALLBACK_API_CONNECT_OPTIONS
-from livekit.agents.types import APIConnectOptions, NOT_GIVEN, NotGivenOr
+from livekit.agents.types import NOT_GIVEN, APIConnectOptions, NotGivenOr
 from livekit.plugins import google, groq
 
 from . import config
@@ -34,7 +35,9 @@ def _trim_chat_ctx(chat_ctx: llm.ChatContext, max_messages: int) -> llm.ChatCont
     ]
     kept_calls = {it.call_id for it in kept if it.type == "function_call"}
     kept = [
-        it for it in kept if it.type != "function_call_output" or it.call_id in kept_calls
+        it
+        for it in kept
+        if it.type != "function_call_output" or it.call_id in kept_calls
     ]
     return llm.ChatContext(kept)
 
@@ -70,6 +73,7 @@ def build_llm() -> llm.LLM:
             model=model,
             temperature=config.LLM_TEMPERATURE,
             thinking_config={"thinking_level": "minimal"},
+            http_options=genai_types.HttpOptions(timeout=config.GEMINI_HTTP_TIMEOUT_MS),
         )
         for model in config.GEMINI_MODELS
     ]

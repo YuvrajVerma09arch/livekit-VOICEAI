@@ -44,6 +44,11 @@ GROQ_LLM_MODELS = [
 ]
 LLM_TEMPERATURE = 0.5
 
+# google rejects any manually-set deadline under 10s ("Minimum allowed deadline
+# is 10s"); the fallback's 5s attempt timeout is what otherwise feeds it. 15s
+# clears the minimum with margin, so gemini no longer 400s on every request.
+GEMINI_HTTP_TIMEOUT_MS = 15000
+
 # cap what each LLM request carries to the last 10 messages (5 user/assistant
 # exchanges); instructions are always kept. Bounds token spend and TTFT as a
 # call gets longer - the provider never sees the full transcript.

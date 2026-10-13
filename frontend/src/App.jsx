@@ -41,7 +41,7 @@ export default function App() {
     <LiveKitRoom
       serverUrl={session.url}
       token={session.token}
-      audio={{ echoCancellation: true, noiseSuppression: true }}
+      audio={{ echoCancellation: true, noiseSuppression: false }}
       video={false}
       connect
       onDisconnected={endCall}

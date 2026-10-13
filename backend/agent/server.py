@@ -15,6 +15,7 @@ from livekit.agents import (
     inference,
     room_io,
 )
+from livekit.plugins import noise_cancellation
 
 from . import config
 from .agent import KilosAgent
@@ -94,7 +95,9 @@ async def entrypoint(ctx: JobContext) -> None:
         agent=KilosAgent(),
         room=ctx.room,
         room_options=room_io.RoomOptions(
-            audio_input=room_io.AudioInputOptions(),
+            audio_input=room_io.AudioInputOptions(
+                noise_cancellation=noise_cancellation.BVC(),
+            ),
             # when the avatar is active it publishes the agent audio, so the agent must
             # not publish its own audio track (otherwise both would be heard)
             audio_output=avatar is None,

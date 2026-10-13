@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/token",
-      "destination": "https://REPLACE-WITH-YOUR-SERVICE.onrender.com/token"
+      "destination": "https://kilos-token-server.onrender.com/token"
     }
   ],
   "headers": [

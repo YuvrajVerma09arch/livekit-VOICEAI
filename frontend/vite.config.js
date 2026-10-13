@@ -6,8 +6,8 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/token': 'http://localhost:7860',
-      '/healthz': 'http://localhost:7860',
+      '/token': { target: 'http://localhost:7860', changeOrigin: false },
+      '/healthz': { target: 'http://localhost:7860', changeOrigin: false },
     },
   },
 });

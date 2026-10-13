@@ -1,6 +1,6 @@
 # Render Blueprint - deploys the two long-running pieces of this app:
 #   1. kilos-token-server  (web)      - FastAPI /token endpoint, /healthz for checks
-#   2. kilos-agent         (worker)   - the LiveKit agent worker (base_agent.py start)
+#   2. kilos-agent         (worker)   - the LiveKit agent worker (backend/agent)
 #
 # Deploy: Render Dashboard -> New -> Blueprint -> pick this repo.
 # Secrets are prompted for on the Blueprint setup screen (sync: false).
@@ -12,7 +12,7 @@ services:
     runtime: python
     plan: free
     buildCommand: uv sync --frozen --no-dev
-    startCommand: uv run --no-sync uvicorn token_server:app --host 0.0.0.0 --port $PORT
+    startCommand: uv run --no-sync uvicorn backend.token.app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
@@ -22,6 +22,13 @@ services:
       - key: LIVEKIT_API_KEY
         sync: false
       - key: LIVEKIT_API_SECRET
+        sync: false
+      # shared secret the frontend must send to /token; unset fails closed (500)
+      - key: APP_PASSWORD
+        sync: false
+      # comma-separated browser origins allowed to call /token (e.g. your Vercel URL);
+      # leave unset to fall back to the same-host check
+      - key: TOKEN_ALLOWED_ORIGINS
         sync: false
       - key: SIMLI_API_KEY
         sync: false
@@ -36,7 +43,7 @@ services:
     # background workers have no free tier; 0.5c-512mb is the smallest plan
     plan: 0.5c-512mb
     buildCommand: uv sync --frozen --no-dev
-    startCommand: uv run --no-sync python base_agent.py start
+    startCommand: uv run --no-sync python -m backend.agent start
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.5"
@@ -46,15 +53,20 @@ services:
         sync: false
       - key: LIVEKIT_API_SECRET
         sync: false
-      - key: ELEVEN_API_KEY
+      - key: GOOGLE_API_KEY
         sync: false
       - key: GROQ_API_KEY
+        sync: false
+      - key: SARVAM_API_KEY
         sync: false
       - key: SIMLI_API_KEY
         sync: false
       - key: SIMLI_AVATAR_ID
         sync: false
-      # - key: ELEVEN_VOICE_ID
-      #   sync: false
+      # avatar fallback chain; unset = auto-detect from whichever keys are present
+      - key: AVATAR_PROVIDER
+        sync: false
+      - key: TAVUS_API_KEY
+        sync: false
       # - key: SIMLI_JOIN_TIMEOUT
       #   value: "15"

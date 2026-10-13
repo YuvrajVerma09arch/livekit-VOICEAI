@@ -78,6 +78,23 @@ code {
   line-height: 1.55;
 }
 
+.start-card input {
+  width: 100%;
+  padding: 13px 18px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font: inherit;
+}
+
+.start-card input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(31, 213, 249, 0.18);
+}
+
 .start-orb {
   width: 92px;
   height: 92px;

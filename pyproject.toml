@@ -3,8 +3,8 @@ name = "livekit-voice-assistant"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "livekit-agents[elevenlabs,groq,simli]~=1.8",
-    # imported directly by token_server.py; declared rather than relied on as a
+    "livekit-agents[elevenlabs,groq,simli,sarvam,tavus,google]~=1.8",
+    # imported directly by backend/token/app.py; declared rather than relied on as a
     # transitive dep of livekit-agents
     "livekit-api~=1.2",
     "python-dotenv>=1.2.2",

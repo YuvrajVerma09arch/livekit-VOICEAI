@@ -10,14 +10,14 @@ export default function App() {
   const [error, setError] = useState(null);
   const [joining, setJoining] = useState(false);
 
-  const startCall = useCallback(async () => {
+  const startCall = useCallback(async (password) => {
     setJoining(true);
     setError(null);
     try {
       const res = await fetch('/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ password }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {

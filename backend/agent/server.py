@@ -33,7 +33,11 @@ async def entrypoint(ctx: JobContext) -> None:
         "room": ctx.room.name,
     }
 
-    agent_vad = inference.VAD(model="silero")
+    agent_vad = inference.VAD(
+        model="silero",
+        min_speech_duration=config.VAD_MIN_SPEECH_DURATION_S,
+        activation_threshold=config.VAD_ACTIVATION_THRESHOLD,
+    )
     speech_stt = build_stt(agent_vad)
     speech_tts = build_tts()
     logger.info(

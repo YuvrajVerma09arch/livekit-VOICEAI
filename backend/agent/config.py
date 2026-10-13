@@ -54,6 +54,34 @@ HISTORY_MAX_MESSAGES = 10
 TURN_COMMIT_MIN_DELAY = 0.4
 TURN_COMMIT_MAX_DELAY = 3.0
 
+# Silero VAD tuning (stock defaults are 0.05s min speech / 0.5 threshold, which
+# let a click or an echo of Kilos's own voice open a turn - whisper then happily
+# hallucinates "Thank you." out of 100ms of noise and the LLM answers it).
+# Require a real voiced utterance before STT ever sees the audio; 0.2s keeps
+# short genuine answers like "yes" while rejecting blips.
+VAD_MIN_SPEECH_DURATION_S = 0.2
+VAD_ACTIVATION_THRESHOLD = 0.55
+
+# committed user turns whose transcript is only these (or has no letters/digits
+# at all) are dropped before reaching the LLM instead of getting a real answer
+IGNORED_USER_TURNS = frozenset(
+    {
+        "thank you",
+        "thankyou",
+        "thanks",
+        "thank u",
+        "thx",
+        "thank you so much",
+        "thanks a lot",
+        "hmm",
+        "hm",
+        "huh",
+        "uh",
+        "um",
+        "mmm",
+    }
+)
+
 # cap how many tool round-trips one turn may burn before forcing an answer
 MAX_TOOL_STEPS = 4
 

@@ -1,8 +1,9 @@
 """The agent persona: instructions, greeting and lifecycle hooks."""
 
 import logging
+import re
 
-from livekit.agents import Agent
+from livekit.agents import Agent, StopResponse, llm
 
 from . import config
 from .tools import AGENT_TOOLS
@@ -26,10 +27,26 @@ INSTRUCTIONS = (
 
 GREETING = "Hi, I'm Kilos. Ask me anything, or ask me for the weather."
 
+_JUNK_CHARS = re.compile(r"[^\w\s]")
+
+
+def _normalize_turn(text: str) -> str:
+    return _JUNK_CHARS.sub(" ", text).lower().strip()
+
 
 class KilosAgent(Agent):
     def __init__(self) -> None:
         super().__init__(instructions=INSTRUCTIONS, tools=list(AGENT_TOOLS))
+
+    async def on_user_turn_completed(
+        self, turn_ctx: llm.ChatContext, new_message: llm.ChatMessage
+    ) -> None:
+        text = new_message.text_content or ""
+        normalized = _normalize_turn(text)
+        if not any(ch.isalnum() for ch in text) or normalized in config.IGNORED_USER_TURNS:
+            logger.info(f"ignoring junk user turn: {text!r}")
+            raise StopResponse
+
 
     async def on_enter(self) -> None:
         # a canned greeting rather than generate_reply(): a model that wants a user

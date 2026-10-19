@@ -16,7 +16,7 @@ services:
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
-        value: "3.13.5"
+        value: "3.12"
       - key: LIVEKIT_URL
         sync: false
       - key: LIVEKIT_API_KEY
@@ -46,7 +46,7 @@ services:
     startCommand: uv run --no-sync python -m backend.agent start
     envVars:
       - key: PYTHON_VERSION
-        value: "3.13.5"
+        value: "3.12"
       - key: LIVEKIT_URL
         sync: false
       - key: LIVEKIT_API_KEY
@@ -67,6 +67,12 @@ services:
       - key: AVATAR_PROVIDER
         sync: false
       - key: TAVUS_API_KEY
+        sync: false
+      # TTS provider: "sarvam" (managed API), "kokoro" (self-hosted), "elevenlabs"
+      - key: TTS_PROVIDER
+        sync: false
+      # URL of the kokoro-tts service; only used when TTS_PROVIDER=kokoro
+      - key: KOKORO_TTS_URL
         sync: false
       # - key: SIMLI_JOIN_TIMEOUT
       #   value: "15"

@@ -51,8 +51,9 @@ _WMO_CODES: dict[int, str] = {
 
 @function_tool
 async def web_search(query: str) -> str:
-    """Search the web with DuckDuckGo. Returns the top results as title, url and
-    a short snippet. Use this whenever a fact may have changed or you're unsure."""
+    """Search the web with DuckDuckGo for current/real-time facts (news, live
+    prices, scores, recent events). Do NOT use for general knowledge — answer
+    that from your own knowledge."""
 
     def _search() -> list[dict[str, Any]]:
         with DDGS() as ddgs:

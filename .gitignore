@@ -9,3 +9,4 @@ __pycache__/
 .vercel
 /.omo
 ideas.md
+.DS_Store

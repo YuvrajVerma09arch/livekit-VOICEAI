@@ -8,15 +8,18 @@ import logging
 from livekit.agents import (
     AgentServer,
     AgentSession,
+    AgentStateChangedEvent,
     ConversationItemAddedEvent,
+    ErrorEvent,
     JobContext,
     SessionUsageUpdatedEvent,
+    UserInputTranscribedEvent,
+    UserStateChangedEvent,
+    UserTranscriptionTimeoutEvent,
     cli,
     inference,
     room_io,
 )
-from livekit.plugins import noise_cancellation
-
 from . import config
 from .agent import KilosAgent
 from .avatar import start_avatar
@@ -46,10 +49,20 @@ async def entrypoint(ctx: JobContext) -> None:
     )
 
     session: AgentSession = AgentSession(
-        # no barge-in: Kilos always finishes what it is saying. Audio heard while it
-        # talks is dropped rather than queued (the default discard_audio_if_uninterruptible)
         turn_handling={
-            "interruption": {"enabled": False},
+            # "vad" disables the framework's auto-selected EOT turn detector: that
+            # model awaits a cloud end-of-turn prediction (up to 1s timeout) before
+            # committing every turn, and can stretch the commit to max_delay (3s)
+            # when it doubts the turn ended. Pure VAD + the fixed delay below is
+            # both faster per-turn and deterministic.
+            "turn_detection": "vad",
+            # barge-in via LiveKit's adaptive (ML) overlapping-speech classifier. This
+            # also fixes silent-after-first-reply: with interruptions off, the framework
+            # discards ALL mic audio while it believes the agent is speaking (the
+            # discard_audio_if_uninterruptible default), so any user speech during or
+            # after a long reply vanished with no error. min_duration 0.5s +
+            # false_interruption resume (2s) keep coughs/backchannels from killing replies.
+            "interruption": {"enabled": True, "mode": "adaptive"},
             "endpointing": {
                 "mode": "fixed",
                 "min_delay": config.TURN_COMMIT_MIN_DELAY,
@@ -84,6 +97,35 @@ async def entrypoint(ctx: JobContext) -> None:
             return
         logger.info(f"turn metrics: {turn_metrics}")
 
+    # no-reply-bug diagnostics: pin each stage of the input -> transcript ->
+    # commit -> reply pipeline to the log so a silent session shows where
+    # the chain stops instead of showing nothing.
+    @session.on("user_input_transcribed")
+    def _on_user_input(ev: UserInputTranscribedEvent) -> None:
+        logger.info(
+            f"user input: final={ev.is_final} lang={ev.language} "
+            f"speaker={ev.speaker_id} text={ev.transcript!r}"
+        )
+
+    @session.on("user_transcription_timeout")
+    def _on_user_transcription_timeout(ev: UserTranscriptionTimeoutEvent) -> None:
+        logger.warning(
+            f"user transcription timeout: speech_duration={ev.speech_duration}s "
+            f"vad_speech_started_at={ev.vad_speech_started_at}"
+        )
+
+    @session.on("user_state_changed")
+    def _on_user_state(ev: UserStateChangedEvent) -> None:
+        logger.info(f"user state: {ev.old_state} -> {ev.new_state}")
+
+    @session.on("agent_state_changed")
+    def _on_agent_state(ev: AgentStateChangedEvent) -> None:
+        logger.info(f"agent state: {ev.old_state} -> {ev.new_state}")
+
+    @session.on("error")
+    def _on_error(ev: ErrorEvent) -> None:
+        logger.error(f"session error: {ev.error}")
+
     async def log_usage() -> None:
         logger.info(f"Usage: {session.usage}")
 
@@ -95,9 +137,6 @@ async def entrypoint(ctx: JobContext) -> None:
         agent=KilosAgent(),
         room=ctx.room,
         room_options=room_io.RoomOptions(
-            audio_input=room_io.AudioInputOptions(
-                noise_cancellation=noise_cancellation.BVC(),
-            ),
             # when the avatar is active it publishes the agent audio, so the agent must
             # not publish its own audio track (otherwise both would be heard)
             audio_output=avatar is None,

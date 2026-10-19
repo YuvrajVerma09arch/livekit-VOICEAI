@@ -12,7 +12,10 @@ load_dotenv()
 LIVEKIT_URL = os.getenv("LIVEKIT_URL", "")
 LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY", "")
 LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET", "")
-AVATAR_ENABLED = bool(os.getenv("SIMLI_API_KEY") and os.getenv("SIMLI_AVATAR_ID"))
+AVATAR_ENABLED = bool(
+    (os.getenv("SIMLI_API_KEY") and os.getenv("SIMLI_AVATAR_ID"))
+    or os.getenv("TAVUS_API_KEY")
+)
 
 TOKEN_TTL = timedelta(seconds=60 * 10)
 

@@ -23,7 +23,7 @@ from contextlib import asynccontextmanager
 import numpy as np
 import soundfile as sf
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from huggingface_hub import hf_hub_download
@@ -37,6 +37,10 @@ SAMPLE_RATE = 24000
 STOCK_REPO = "hexgrad/Kokoro-82M"
 GOONJ_REPO = "BH-Builds/goonj-1-82M"
 GOONJ_WEIGHTS = "kokoro_hindi_final.pth"
+
+# optional bearer auth for public hosting; unset = no auth (local sidecar).
+# the agent already sends this via KOKORO_TTS_API_KEY when configured.
+API_KEY = os.getenv("KOKORO_API_KEY", "")
 
 VARIANT = os.getenv("KOKORO_VARIANT", "stock")
 if VARIANT not in ("stock", "goonj"):
@@ -144,7 +148,11 @@ def _split_hindi(text: str) -> str:
 
 
 @app.post("/v1/audio/speech")
-def speech(req: SpeechRequest) -> Response:
+def speech(
+    req: SpeechRequest, authorization: str | None = Header(default=None)
+) -> Response:
+    if API_KEY and authorization != f"Bearer {API_KEY}":
+        raise HTTPException(status_code=401, detail="missing or invalid API key")
     if not _pipelines:
         raise HTTPException(status_code=503, detail="model not loaded")
     if not req.text.strip():

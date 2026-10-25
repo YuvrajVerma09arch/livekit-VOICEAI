@@ -36,6 +36,12 @@ class TokenResponse(BaseModel):
 def healthz() -> dict:
     return {"ok": True, "avatar": config.AVATAR_ENABLED}
 
+from fastapi import Response
+
+@app.head("/healthz")
+async def health_head():
+    return Response(status_code=200)
+
 
 @app.post("/token", response_model=TokenResponse)
 def create_token(req: TokenRequest, request: Request) -> TokenResponse:

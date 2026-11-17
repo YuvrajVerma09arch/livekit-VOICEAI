@@ -81,7 +81,7 @@ ELEVEN_STT_SECONDARY_LANGUAGES = ["hi", "gu", "en"]
 # default), "groq" (whisper primary + sarvam fallback), or "elevenlabs"
 # (Scribe). Sarvam auto-detects Hindi/Gujarati/English so the reply language
 # follows the user.
-STT_PROVIDER = os.getenv("STT_PROVIDER", "sarvam")
+STT_PROVIDER = os.getenv("STT_PROVIDER", "elevenlabs")
 
 # ---------------------------------------------------------------------------
 # LLM fallback chain, in priority order: self-hosted Qwen (Kaggle notebook,
